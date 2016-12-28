@@ -1,0 +1,142 @@
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+ 
+    <title>HDRHistogramJS ping demo</title>
+
+    <!-- Bootstrap core CSS -->
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+
+    <!-- Custom styles for this template -->
+    <link rel="stylesheet" href="./bootstrap.theme.css" />
+  </head>
+
+  <body>
+
+    <div class="site-wrapper">
+
+      <div class="site-wrapper-inner">
+
+        <div class="cover-container">
+
+          <div class="masthead clearfix">
+            <div class="inner">
+              <h3 class="masthead-brand">HDRHistogramJS</h3>
+              <!--<nav>
+                <ul class="nav masthead-nav">
+                  <li class="active"><a href="https://github.com/alexvictoor/BrowserLog#usage">Installation</a></li>
+                  <li><a href="https://github.com/alexvictoor/BrowserLog#multiple-server-side-process">Advanced usage</a></li>
+                </ul>
+              </nav>-->
+            </div>
+          </div>
+
+          <div class="inner cover">
+            <h1 class="cover-heading">Ping Demo</h1>
+            <p class="lead">Simple demo where a browser timer pings github</p>
+          </div>
+
+            <form>
+              <div class="form-group row">
+                <label for="lastPingValue" class="col-sm-6 col-form-label">Last value (ms)</label>
+                <div class="col-sm-3">
+                  <input type="number" class="form-control form-control-lg" id="lastPingValue" placeholder="Last Ping Value" readonly>
+                </div>
+              </div>
+              <div class="form-group row">
+                <label for="pingNumber" class="col-sm-6 col-form-label">Number of pings</label>
+                <div class="col-sm-3">
+                  <input type="number" class="form-control form-control-lg" id="pingNumber" placeholder="Ping number" readonly>
+                </div>
+              </div>
+              <div class="form-group row">
+                <label for="maxPingValue" class="col-sm-6 col-form-label">Max</label>
+                <div class="col-sm-3">
+                  <input type="number" class="form-control form-control-lg" id="maxPingValue" placeholder="Max Ping Value" readonly>
+                </div>
+              </div>
+              <div class="form-group row">
+                <label for="threeNinePercentile" class="col-sm-6 col-form-label">99.9%</label>
+                <div class="col-sm-3">
+                  <input type="number" class="form-control form-control-lg" id="threeNinePercentile" placeholder="99.9%" readonly>
+                </div>
+              </div>
+              <div class="form-group row">
+                <label for="twoNinePercentile" class="col-sm-6 col-form-label">99%</label>
+                <div class="col-sm-3">
+                  <input type="number" class="form-control form-control-lg" id="twoNinePercentile" placeholder="99%" readonly>
+                </div>
+              </div>
+              <div class="form-group row">
+                <label for="oneNinePercentile" class="col-sm-6 col-form-label">90%</label>
+                <div class="col-sm-3">
+                  <input type="number" class="form-control form-control-lg" id="oneNinePercentile" placeholder="90%" readonly>
+                </div>
+              </div>
+              <div class="form-group row">
+                <label for="minPingValue" class="col-sm-6 col-form-label">Min</label>
+                <div class="col-sm-3">
+                  <input type="number" class="form-control form-control-lg" id="minPingValue" placeholder="Min Ping Value" readonly>
+                </div>
+              </div>
+            </form>
+
+          <div class="mastfoot">
+            <div class="inner">
+              <p>Check out the project homepage on <a href="https://github.com/alexvictoor/HDRHistogramJS">Github</a></p>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
+    
+    <script src="lib/hdrhistogram.min.js"></script>
+
+    <script>
+      const histogram = hdr.build();
+      $(function() {
+        const minElt = $("#minPingValue");
+        const maxElt = $("#maxPingValue");
+        const lastElt = $("#lastPingValue");
+        const numberElt = $("#pingNumber");
+        const threeNineElt = $("#threeNinePercentile");
+        const twoNineElt = $("#twoNinePercentile");
+        const oneNineElt = $("#oneNinePercentile");
+
+        setInterval(
+          function() {
+            const now = new Date().getTime();
+            $.ajax({
+              url: "ping.json?nocache=" + now,
+              context: now
+            }).done(function() {
+              const latency = new Date().getTime() - this;
+              histogram.recordValue(latency);
+              lastElt.val(latency);
+              minElt.val(histogram.minNonZeroValue);
+              maxElt.val(histogram.maxValue);
+              numberElt.val(histogram.getTotalCount());
+              threeNineElt.val(histogram.getValueAtPercentile(99.9));
+              twoNineElt.val(histogram.getValueAtPercentile(99));
+              oneNineElt.val(histogram.getValueAtPercentile(90));
+            });
+          },
+          100
+        );
+      });
+    </script>
+</body>
+</html>
