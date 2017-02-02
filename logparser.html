@@ -1,0 +1,349 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<style type="text/css">
+    div.histo {
+        visibility: hidden
+    }
+</style>
+
+<!--Load the AJAX API-->
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+<script type="text/javascript" src="lib/pako.min.js"></script>
+<script type="text/javascript" src="lib/hdrhistogram.min.js"></script>
+
+
+<script type="text/javascript">
+
+    if (window.File && window.FileReader && window.FileList && window.Blob) {
+        // Great success! All the File APIs are supported.
+    } else {
+        alert('The File APIs are not fully supported in this browser.');
+    }
+
+    // Load the Visualization API and the piechart package.
+    google.load('visualization', '1.0', {'packages':['corechart', 'annotationchart']});
+
+    // Set a callback to run when the Google Visualization API is loaded.
+    //google.setOnLoadCallback(drawInitialChart);
+    google.setOnLoadCallback(function() {
+        //google.visualization.arrayToDataTable([]);
+        //drawChart();
+        document.getElementById('files').addEventListener('change', handleFileSelect, false);
+    });
+
+
+
+    //var chartData = null;
+    var chart = null;
+    var maxChart = null;
+    var logs = null;
+
+    function setChartData(names, histos) {
+        while (names.length < histos.length) {
+            names.push('Unknown');
+        }
+
+        var series = [];
+        for (var i = 0; i < histos.length; i++) {
+            if (!histos[i].startsWith("HIST")) {
+                console.log("Good old histogram output parsing for " + names[i]);
+                series = appendDataSeries(histos[i], names[i], series);    
+            } else {
+                console.log("Will try base64 decoding on " + names[i]);
+                var histogram = hdr.decodeFromCompressedBase64(histos[i]);
+                var histoOutput = histogram.outputPercentileDistribution();
+                series = appendDataSeries(histoOutput, names[i], series);
+            }
+            
+        }
+
+        chartData = google.visualization.arrayToDataTable(series);
+    }
+
+
+    function drawInitialChart() {
+        // Connect the choose files button:
+        document.getElementById('files').addEventListener('change', handleFileSelect, false);
+
+        // Load some static example data:
+        var data1Str = "HISTFAAAAkV42i1NTWgTQRTe93Yyna7jdEzTbaghpjWsEpaQxhLXumxLLEuRGpallJCDhxB6qXqQUsSDFFlDwRzEQikhJ+nFIOLFgkWk9NCz1LtIDx6lIPTixdm2b+bN+37mvZeJNoc1DTvaeSQuKlxUnDk5B6OnA9+O2O+dgY8/yMkR230N75zuys/JrXt7ma2r7cmNkXby0/Vj89j8dSMa3sls8wN2yt8kvuvrdB8PsEv+wKG+D1/hA/ZgHSJsunuw8HTKW6sstKxiaM+nJ7ycVS0Wl6ZWS/mm4z5q+F3wX7gTQa60nCkGhelCvn7TCtOpmj1XKAXTE82i24FaG6puD/xKH2qNlzC7C/7DCMJKFyx/zY/AnV0LnB7Uwz4sbIAXbkNY24K5pT64fQgaPVhcPIR66y0EHfCrEQRhB+aDVSeCqtrf9J75Lct57tnNOXu10nLtesVdLpQb5fuW0yw5T0rTXt6rmPO5vJ2RpbGyJfPp7KzIWrmylDaX2WQqzS2ZLnCRFWbBHONcSDpGpTAEM7jB0zyZEaakWWokBZNoEJbkJEVJiglpMMYkJ4KajJnESHGRoianklBBDK4eyhnjBKUhKSWUKogaIUhUMMGQKk6QMko0olPU2JmvM6US1NVFxdWhGAfRY0FTQCMJvLBiFc/uuYYJBRMxH8QrKvGSKpdxHIdwWOUdZYzjJipyG2fwsTJXEAdwBB8o55b6kYi7B1XbOOI1tUBXOapWxiPjobEypJRXgHcVmcH3gF+kmvK3jfjvM+B/gsBx8g==";
+
+        var data2Str = "HISTFAAAATR42i1MPUhCYRT97nn3fejrPY2XlVFJQkgRtBT9gBBBWxBBQSANIW0tzY3xyEVEUFwNgloCw5pqiYaGaBCRaBPCNQlqCUK6T70X7jnnnnPvhFcYUorWVa/MPlIfsfbVI2P5zuB9xTnf/dkq3tBjvD79Mfy31B7x3Go4yy+o8h1lqUXpa26HOzP1zUao5RSjOf3Ml7qBJz5Djd6Qp5N38uigRoclOk6VaD+do5WN7UQyEkvq0FQkOm8nQoEY264FV1mKbba0rS3lasuF1sysLRlQCChR0AzWYiiIVAAjDDEHYLAIA9KsxDD9LZtsdLm/MSTkT4VRwOEgm9075Qd9EkdQbueErwpfENyR3wXCJGaxJ4FxXBCugCM0Cd+EDNA0cMsoL6OSwmcK5VfCwynhdxH/bL08Pw==";
+
+        var data3Str = "HISTFAAAAXt42i1OTSuEURS+57nnfed6Z8bMOzO+hsmMSCEiKRuSzx9BFhYs7PwDSc2kKJENSrLwMcpCQpHFbH3Eht0kC4tpVorF5LzDvfc85zzPfc65t2FpPaoUHaq/Zf1n+s8YLP4V0cKVf+c+mDvSuTO626fbE1rbo4v6HzdXc+4cRL6sY36381jEij6jDF3S3Cdl9bL/azTTVIr9JIrOk+/DPOCZi1SiDL/SORVwTdeUxXyeJke2aKxvhdo6J5ID4XhHbbI3EO+JNQciyUpT7YQjTjxsKtmOswmbWodtNgEHRtm2MgzHsFHG1oADBpgroAxYCVGAxcpW8Inuh2awT5gWXiEo3AuFKrbE4Okyxru1BK2yByEPJIIiBGXLEcEzKMEF1KAOLoaBdvH3i+zCL1UrxrFKuAGimEUCM0jJl1Ji70I3GqXVa4f3NVVuC8pLIXaBFumewrTMcbELGWbhjfBtyaAhT0jgRWOjDtsaV4NIp5A+1XjsxsYm4xd7EUW6";
+        var histos = [data3Str, data2Str, data1Str];
+        var names = ['A', 'B', 'C'];
+
+        setChartData(names, histos);
+        drawChart();
+    }
+
+    var maxPercentile = 1000000;
+
+    function drawChart(chartData) {
+
+        var ticks =
+                [{v:1,f:'0%'},
+                    {v:10,f:'90%'},
+                    {v:100,f:'99%'},
+                    {v:1000,f:'99.9%'},
+                    {v:10000,f:'99.99%'},
+                    {v:100000,f:'99.999%'},
+                    {v:1000000,f:'99.9999%'},
+                    {v:10000000,f:'99.99999%'},
+                    {v:100000000,f:'99.999999%'}];
+
+        var unitSelection = document.getElementById("timeUnitSelection");
+        var unitSelIndex = unitSelection.selectedIndex;
+        var unitText = unitSelection.options[unitSelIndex].innerHTML;
+
+        var options = {
+            title: 'Latency by Percentile Distribution',
+            height: 480,
+//            hAxis: {title: 'Percentile', minValue: 0, logScale: true, ticks:ticks },
+            hAxis: {
+                title: "Percentile",
+                minValue: 1, logScale: true, ticks:ticks,
+                viewWindowMode:'explicit',
+                viewWindow:{
+                    max:maxPercentile,
+                    min:1
+                }
+            },
+            vAxis: {title: 'Latency (' + unitText + ')', minValue: 0 },
+            legend: {position: 'bottom'}
+        };
+
+        if (chart == null) {
+            chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+        }
+
+        // add tooptips with correct percentile text to data:
+        var columns = [0];
+        for (var i = 1; i < chartData.getNumberOfColumns(); i++) {
+            columns.push(i);
+            columns.push({
+                type: 'string',
+                properties: {
+                    role: 'tooltip'
+                },
+                calc: (function (j) {
+                    return function (dt, row) {
+                        var percentile = 100.0 - (100.0/dt.getValue(row, 0));
+                        return dt.getColumnLabel(j) + ': ' +
+                                percentile.toPrecision(7) +
+                                '\%\'ile = ' + dt.getValue(row, j) + ' ' + unitText
+                    }
+                })(i)
+            });
+        }
+        var view = new google.visualization.DataView(chartData);
+        view.setColumns(columns);
+
+        chart.draw(view, options);
+
+    }
+
+    function drawMaxChart(rawData) {
+        var data = new google.visualization.DataTable();
+        data.addColumn('datetime', 'Date');
+        data.addColumn('number', 'Max');
+       
+        data.addRows(rawData);
+
+        if (!maxChart) {
+            maxChart = new google.visualization.AnnotationChart(document.getElementById('max_chart_div'));
+        }
+
+        var options = {
+          displayAnnotations: false
+        };
+
+        maxChart.draw(data, options);
+
+        google.visualization.events.addListener(maxChart, 'rangechange', debounce(rangechange_handler, 200));
+
+        function debounce(callback, delay){
+          var timer;
+          return function(){
+            var args = arguments;
+            var context = this;
+            clearTimeout(timer);
+            timer = setTimeout(function(){
+              callback.apply(context, args);
+            }, delay)
+          }
+        }
+
+        function rangechange_handler(e) {
+          console.log('You changed the range to ', e.start, ' and ', e.end);
+          const data = parseLog(e.start, e.end);
+          drawChart(data.histogram);
+        }
+      }
+
+
+    function appendDataSeries(histo, name, dataSeries) {
+        var series;
+        var seriesCount;
+        if (dataSeries.length == 0) {
+            series = [ ['X', name] ];
+            seriesCount = 1;
+        } else {
+            series = dataSeries;
+            series[0].push(name);
+            seriesCount = series[0].length - 1;
+        }
+
+        var lines = histo.split("\n");
+
+        var seriesIndex = 1;
+        for (var i = 0; i < lines.length; i++) {
+            var line = lines[i].trim();
+            var values = line.trim().split(/[ ]+/);
+
+            if (line[0] != '#' && values.length == 4) {
+
+                var y = parseFloat(values[0]);
+                var x = parseFloat(values[3]);
+
+                if (!isNaN(x) && !isNaN(y)) {
+
+                    if (seriesIndex >= series.length) {
+                        series.push([x]);
+                    }
+
+                    while (series[seriesIndex].length < seriesCount) {
+                        series[seriesIndex].push(null);
+                    }
+
+                    series[seriesIndex].push(y);
+                    seriesIndex++;
+                }
+            }
+        }
+
+        while (seriesIndex < series.length) {
+            series[seriesIndex].push(null);
+            seriesIndex++;
+        }
+
+        return series;
+    }
+    function timeUnitsSelected(evt) {
+        drawChart();
+    }
+
+    function parseLog(begin = new Date(0), end = new Date(8640000000000000)) {
+        const reader = new hdr.HistogramLogReader(logs);
+        const accumulatedHistogram = new hdr.Int32Histogram(1, Number.MAX_SAFE_INTEGER, 3);
+        let histogram; 
+        const rows = [];
+        while ((histogram = reader.nextIntervalHistogram()) != null) {
+            if (begin <= new Date(histogram.startTimeStampMsec) && new Date(histogram.startTimeStampMsec) <= end) {
+                accumulatedHistogram.add(histogram);
+                rows.push([new Date(histogram.startTimeStampMsec), histogram.maxValue])
+            }
+        }
+
+        const histoOutput = accumulatedHistogram.outputPercentileDistribution();
+        const chartData = google.visualization.arrayToDataTable(appendDataSeries(histoOutput, "Full", []));    
+
+        return {
+            histogram: chartData,
+            maxDataRows: rows
+        }
+    }
+
+   
+
+    function handleFileSelect(evt) {
+        var files = evt.target.files; // FileList object
+        var fileDisplayArea = document.getElementById('fileDisplayArea');
+
+        var names = [];
+        var histos = [];
+        var fileCount = 0;
+
+        fileDisplayArea.innerText = "file selected...\n";
+
+        // Loop through the FileList and render image files as thumbnails.
+        for (var i = 0, f; f = files[i]; i++) {
+            var reader = new FileReader();
+
+            reader.onload = (function(theFile) {
+                return function(e) {
+                    //histos.push(e.target.result);
+                    //names.push(escape(theFile.name));
+                    fileDisplayArea.innerText = " Plotting input from: " + names + "\n";
+                    //setChartData(names, histos);
+                    //drawChart();
+                    logs = e.target.result;
+                    const data = parseLog();
+                    drawChart(data.histogram);
+                    drawMaxChart(data.maxDataRows);
+                };
+            })(f);
+
+            // Read in the image file as a data URL.
+            reader.readAsText(f);
+        }
+
+    }
+
+ 
+</script>
+
+<style>
+    .slider-width500
+    {
+        width: 500px;
+    }
+</style>
+
+</head>
+
+<body>
+<h2>HdrHistogram simple log reader</h2>
+
+<input type="file" id="files" name="files[]" multiple />
+
+<pre id="fileDisplayArea">Please select file(s) above.</pre>
+
+<div id="max_chart_div"></div>
+<div id="chart_div">None Loaded</div>
+
+Latency time units:
+<select name="units" size="1" id="timeUnitSelection" onChange="timeUnitsSelected()">
+    <option value="Latency (seconds)">seconds</option>
+    <option selected value="Latency (milliseconds)">milliseconds</option>
+    <option value="Latency (µs)">microseconds</option>
+    <option value="Latency (nanoseconds)">nanoseconds</option>
+</select>
+
+&nbsp; &nbsp; &nbsp; &nbsp;
+<p>
+Percentile range:
+
+<input type="range" class="slider-width500"
+       min="1" max="8" value="7" step="1"
+       width="300px"
+       onchange="showValue(this.value)" />
+<span id="percentileRange">99.99999%</span>
+<script type="text/javascript">
+    function showValue(newValue) {
+        var x = Math.pow(10, newValue);
+        percentile = 100.0 - (100.0 / x);
+        document.getElementById("percentileRange").innerHTML=percentile + "%";
+        maxPercentile = x;
+        drawChart();
+    }
+</script>
+</p>
+<p>
+    <br>
+*** Note: TODO
+</p>
+</body>
+</html>
