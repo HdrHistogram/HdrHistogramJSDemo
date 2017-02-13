@@ -25,16 +25,10 @@
     google.load('visualization', '1.0', {'packages':['corechart', 'annotationchart']});
 
     // Set a callback to run when the Google Visualization API is loaded.
-    //google.setOnLoadCallback(drawInitialChart);
     google.setOnLoadCallback(function() {
-        //google.visualization.arrayToDataTable([]);
-        //drawChart();
         document.getElementById('files').addEventListener('change', handleFileSelect, false);
     });
 
-
-
-    //var chartData = null;
     var chart = null;
     var maxChart = null;
     var logs = null;
@@ -59,24 +53,6 @@
         }
 
         chartData = google.visualization.arrayToDataTable(series);
-    }
-
-
-    function drawInitialChart() {
-        // Connect the choose files button:
-        document.getElementById('files').addEventListener('change', handleFileSelect, false);
-
-        // Load some static example data:
-        var data1Str = "HISTFAAAAkV42i1NTWgTQRTe93Yyna7jdEzTbaghpjWsEpaQxhLXumxLLEuRGpallJCDhxB6qXqQUsSDFFlDwRzEQikhJ+nFIOLFgkWk9NCz1LtIDx6lIPTixdm2b+bN+37mvZeJNoc1DTvaeSQuKlxUnDk5B6OnA9+O2O+dgY8/yMkR230N75zuys/JrXt7ma2r7cmNkXby0/Vj89j8dSMa3sls8wN2yt8kvuvrdB8PsEv+wKG+D1/hA/ZgHSJsunuw8HTKW6sstKxiaM+nJ7ycVS0Wl6ZWS/mm4z5q+F3wX7gTQa60nCkGhelCvn7TCtOpmj1XKAXTE82i24FaG6puD/xKH2qNlzC7C/7DCMJKFyx/zY/AnV0LnB7Uwz4sbIAXbkNY24K5pT64fQgaPVhcPIR66y0EHfCrEQRhB+aDVSeCqtrf9J75Lct57tnNOXu10nLtesVdLpQb5fuW0yw5T0rTXt6rmPO5vJ2RpbGyJfPp7KzIWrmylDaX2WQqzS2ZLnCRFWbBHONcSDpGpTAEM7jB0zyZEaakWWokBZNoEJbkJEVJiglpMMYkJ4KajJnESHGRoianklBBDK4eyhnjBKUhKSWUKogaIUhUMMGQKk6QMko0olPU2JmvM6US1NVFxdWhGAfRY0FTQCMJvLBiFc/uuYYJBRMxH8QrKvGSKpdxHIdwWOUdZYzjJipyG2fwsTJXEAdwBB8o55b6kYi7B1XbOOI1tUBXOapWxiPjobEypJRXgHcVmcH3gF+kmvK3jfjvM+B/gsBx8g==";
-
-        var data2Str = "HISTFAAAATR42i1MPUhCYRT97nn3fejrPY2XlVFJQkgRtBT9gBBBWxBBQSANIW0tzY3xyEVEUFwNgloCw5pqiYaGaBCRaBPCNQlqCUK6T70X7jnnnnPvhFcYUorWVa/MPlIfsfbVI2P5zuB9xTnf/dkq3tBjvD79Mfy31B7x3Go4yy+o8h1lqUXpa26HOzP1zUao5RSjOf3Ml7qBJz5Djd6Qp5N38uigRoclOk6VaD+do5WN7UQyEkvq0FQkOm8nQoEY264FV1mKbba0rS3lasuF1sysLRlQCChR0AzWYiiIVAAjDDEHYLAIA9KsxDD9LZtsdLm/MSTkT4VRwOEgm9075Qd9EkdQbueErwpfENyR3wXCJGaxJ4FxXBCugCM0Cd+EDNA0cMsoL6OSwmcK5VfCwynhdxH/bL08Pw==";
-
-        var data3Str = "HISTFAAAAXt42i1OTSuEURS+57nnfed6Z8bMOzO+hsmMSCEiKRuSzx9BFhYs7PwDSc2kKJENSrLwMcpCQpHFbH3Eht0kC4tpVorF5LzDvfc85zzPfc65t2FpPaoUHaq/Zf1n+s8YLP4V0cKVf+c+mDvSuTO626fbE1rbo4v6HzdXc+4cRL6sY36381jEij6jDF3S3Cdl9bL/azTTVIr9JIrOk+/DPOCZi1SiDL/SORVwTdeUxXyeJke2aKxvhdo6J5ID4XhHbbI3EO+JNQciyUpT7YQjTjxsKtmOswmbWodtNgEHRtm2MgzHsFHG1oADBpgroAxYCVGAxcpW8Inuh2awT5gWXiEo3AuFKrbE4Okyxru1BK2yByEPJIIiBGXLEcEzKMEF1KAOLoaBdvH3i+zCL1UrxrFKuAGimEUCM0jJl1Ji70I3GqXVa4f3NVVuC8pLIXaBFumewrTMcbELGWbhjfBtyaAhT0jgRWOjDtsaV4NIp5A+1XjsxsYm4xd7EUW6";
-        var histos = [data3Str, data2Str, data1Str];
-        var names = ['A', 'B', 'C'];
-
-        setChartData(names, histos);
-        drawChart();
     }
 
     var maxPercentile = 1000000;
@@ -108,7 +84,6 @@
         var options = {
             title: 'Latency by Percentile Distribution',
             height: 480,
-//            hAxis: {title: 'Percentile', minValue: 0, logScale: true, ticks:ticks },
             hAxis: {
                 title: "Percentile",
                 minValue: 1, logScale: true, ticks:ticks,
@@ -155,7 +130,7 @@
     function drawMaxChart(rawData) {
         var data = new google.visualization.DataTable();
         data.addColumn('datetime', 'Date');
-        data.addColumn('number', 'Max');
+        data.addColumn('number', 'No Tag');
        
         data.addRows(rawData);
 
@@ -268,13 +243,10 @@
 
     function handleFileSelect(evt) {
         var files = evt.target.files; // FileList object
-        //var fileDisplayArea = document.getElementById('fileDisplayArea');
 
         var names = [];
         var histos = [];
         var fileCount = 0;
-
-        //fileDisplayArea.innerText = "file selected...\n";
 
         // Loop through the FileList and render image files as thumbnails.
         for (var i = 0, f; f = files[i]; i++) {
@@ -282,11 +254,6 @@
 
             reader.onload = (function(theFile) {
                 return function(e) {
-                    //histos.push(e.target.result);
-                    //names.push(escape(theFile.name));
-                    //fileDisplayArea.innerText = " Plotting input from: " + names + "\n";
-                    //setChartData(names, histos);
-                    //drawChart();
                     logs = e.target.result;
                     const data = parseLog();
                     drawChart(data.histogram);
