@@ -1,0 +1,27 @@
+<html>
+  <body>
+    Hello
+    <script src="lib/hdrhistogram.min.js"></script>
+    <script>
+window.onload =  function() {
+      
+      const histogram = hdr.build();
+
+      setInterval(function() { 
+        var before = performance.now();
+        var worker = new Worker('worker.js');
+        var createInMicoSec = Math.round((performance.now() - before) * 1000);
+        histogram.recordValue(createInMicoSec);
+      }, 50);
+  
+      setInterval(
+          function() {
+            console.log(histogram.outputPercentileDistribution());
+          },
+          1000
+        );
+}
+    </script>
+  </body>
+
+</html>

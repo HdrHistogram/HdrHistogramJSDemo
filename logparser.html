@@ -81,7 +81,14 @@
 
     var maxPercentile = 1000000;
 
+    var latestChartData;
     function drawChart(chartData) {
+
+        if (chartData) {
+            latestChartData = chartData;
+        } else {
+            chartData = latestChartData;
+        }
 
         var ticks =
                 [{v:1,f:'0%'},
@@ -157,7 +164,8 @@
         }
 
         var options = {
-          displayAnnotations: false
+          displayAnnotations: false,
+          displayZoomButtons: false
         };
 
         maxChart.draw(data, options);
@@ -260,13 +268,13 @@
 
     function handleFileSelect(evt) {
         var files = evt.target.files; // FileList object
-        var fileDisplayArea = document.getElementById('fileDisplayArea');
+        //var fileDisplayArea = document.getElementById('fileDisplayArea');
 
         var names = [];
         var histos = [];
         var fileCount = 0;
 
-        fileDisplayArea.innerText = "file selected...\n";
+        //fileDisplayArea.innerText = "file selected...\n";
 
         // Loop through the FileList and render image files as thumbnails.
         for (var i = 0, f; f = files[i]; i++) {
@@ -276,7 +284,7 @@
                 return function(e) {
                     //histos.push(e.target.result);
                     //names.push(escape(theFile.name));
-                    fileDisplayArea.innerText = " Plotting input from: " + names + "\n";
+                    //fileDisplayArea.innerText = " Plotting input from: " + names + "\n";
                     //setChartData(names, histos);
                     //drawChart();
                     logs = e.target.result;
@@ -309,10 +317,10 @@
 
 <input type="file" id="files" name="files[]" multiple />
 
-<pre id="fileDisplayArea">Please select file(s) above.</pre>
 
-<div id="max_chart_div"></div>
-<div id="chart_div">None Loaded</div>
+<div id="max_chart_div" style="height: 200px"></div>
+<div style="height: 300px"> 
+<div id="chart_div" > >None Loaded</div>
 
 Latency time units:
 <select name="units" size="1" id="timeUnitSelection" onChange="timeUnitsSelected()">
@@ -341,9 +349,6 @@ Percentile range:
     }
 </script>
 </p>
-<p>
-    <br>
-*** Note: TODO
-</p>
+</div>
 </body>
 </html>
