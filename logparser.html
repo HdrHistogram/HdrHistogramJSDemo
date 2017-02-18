@@ -119,9 +119,12 @@
         
         data.addRows(rawData);
 
-        if (!maxChart) {
-            maxChart = new google.visualization.AnnotationChart(document.getElementById('max_chart_div'));
+        if (maxChart) {
+            maxChart.clearChart();
         }
+        
+        maxChart = new google.visualization.AnnotationChart(document.getElementById('max_chart_div'));
+        
 
         var options = {
           displayAnnotations: false,
