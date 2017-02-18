@@ -11,6 +11,8 @@
 <script type="text/javascript" src="https://www.google.com/jsapi"></script>
 <script type="text/javascript" src="lib/pako.min.js"></script>
 <script type="text/javascript" src="lib/hdrhistogram.min.js"></script>
+<script type="text/javascript" src="jhiccup.log.example.js"></script>
+
 
 <!--
  WARNING quick'n'dirty code down here :(
@@ -29,11 +31,14 @@
     // Set a callback to run when the Google Visualization API is loaded.
     google.setOnLoadCallback(function() {
         document.getElementById('files').addEventListener('change', handleFileSelect, false);
+        displayLogs();
     });
 
     var chart = null;
     var maxChart = null;
-    var logs = null;
+    
+    // initialized in jhiccup.log.example.js
+    //var logs = null;
 
     var maxPercentile = 1000000;
 
@@ -256,7 +261,11 @@
         }
     }
 
-   
+    function displayLogs() {
+        const data = parseLog();
+        drawChart(data.histogram);
+        drawMaxChart(data.tags, data.maxDataRows);
+    }
 
     function handleFileSelect(evt) {
         var files = evt.target.files; // FileList object
@@ -272,9 +281,7 @@
             reader.onload = (function(theFile) {
                 return function(e) {
                     logs = e.target.result;
-                    const data = parseLog();
-                    drawChart(data.histogram);
-                    drawMaxChart(data.tags, data.maxDataRows);
+                    displayLogs();
                 };
             })(f);
 
