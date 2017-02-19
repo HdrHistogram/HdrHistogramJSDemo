@@ -122,7 +122,7 @@
         if (maxChart) {
             maxChart.clearChart();
         }
-        
+
         maxChart = new google.visualization.AnnotationChart(document.getElementById('max_chart_div'));
         
 
@@ -208,6 +208,9 @@
     const accumulatedHistograms = {}
 
     function parseLog(begin = new Date(0), end = new Date(8640000000000000)) {
+
+        var begin = performance.now();
+        
         const reader = new hdr.HistogramLogReader(logs);
         const tags = hdr.listTags(logs);
         
@@ -256,6 +259,9 @@
         tags.forEach(tag => dataSeries = appendDataSeries(accumulatedHistograms[tag].outputPercentileDistribution(), tag, dataSeries));
 
         const chartData = google.visualization.arrayToDataTable(dataSeries);    
+
+        var end = performance.now();
+        console.log("Process logs in ", (end-begin), "ms");
 
         return {
             tags,
@@ -307,7 +313,7 @@
 </head>
 
 <body>
-<h2>HdrHistogram simple log reader</h2>
+<h2>HdrHistogram simple log analyzer</h2>
 
 <input type="file" id="files" name="files[]" multiple />
 
