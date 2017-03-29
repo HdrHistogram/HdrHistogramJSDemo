@@ -209,7 +209,7 @@
 
     function parseLog(begin = new Date(0), end = new Date(8640000000000000)) {
 
-        var begin = performance.now();
+        const beginParsing = performance.now();
         
         const reader = new hdr.HistogramLogReader(logs);
         const tags = hdr.listTags(logs);
@@ -260,8 +260,8 @@
 
         const chartData = google.visualization.arrayToDataTable(dataSeries);    
 
-        var end = performance.now();
-        console.log("Process logs in ", (end-begin), "ms");
+        const endParsing = performance.now();
+        console.log("Process logs in ", (endParsing-beginParsing), "ms");
 
         return {
             tags,
