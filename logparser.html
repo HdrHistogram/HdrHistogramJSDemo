@@ -11,7 +11,6 @@
 <script type="text/javascript" src="https://www.google.com/jsapi"></script>
 <script type="text/javascript" src="lib/pako.min.js"></script>
 <script type="text/javascript" src="lib/hdrhistogram.min.js"></script>
-<script type="text/javascript" src="jhiccup.log.example.js"></script>
 
 
 <!--
@@ -27,11 +26,27 @@
 
     // Load the Visualization API and the piechart package.
     google.load('visualization', '1.0', {'packages':['corechart', 'annotationchart']});
+    
+    const parseUrl = searchString => {
+        const equalIndex = searchString.indexOf('='); 
+        if (equalIndex > 0) {
+            return decodeURI(searchString.substring(equalIndex+1));
+        }
+        return 'https://raw.githubusercontent.com/HdrHistogram/HdrHistogramJS/master/test_files/jHiccup-2.0.7S.logV2.hlog';
+    }
+
+    var logs = null;
 
     // Set a callback to run when the Google Visualization API is loaded.
     google.setOnLoadCallback(function() {
         document.getElementById('files').addEventListener('change', handleFileSelect, false);
-        displayLogs();
+        const url = parseUrl(window.location.search);
+        fetch(url).then(response => {
+            response.text().then(content => {
+                logs = content;
+                displayLogs();
+            });
+        });
     });
 
     var chart = null;
