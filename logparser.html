@@ -271,7 +271,9 @@
         }      
 
         let dataSeries = [];
-        tags.forEach(tag => dataSeries = appendDataSeries(accumulatedHistograms[tag].outputPercentileDistribution(), tag, dataSeries));
+        tags
+           .filter(tag => accumulatedHistograms[tag].maxValue !== 0)
+           .forEach(tag => dataSeries = appendDataSeries(accumulatedHistograms[tag].outputPercentileDistribution(), tag, dataSeries));
 
         const chartData = google.visualization.arrayToDataTable(dataSeries);    
 
