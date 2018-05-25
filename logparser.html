@@ -232,7 +232,7 @@
         const beginParsing = performance.now();
         
         const reader = new hdr.HistogramLogReader(logs);
-        const tags = hdr.listTags(logs);
+        const tags = hdr.listTags(logs).filter(tag => !ignoredMetrics[tag]);
         
         let latestMaxValues = {}
         tags.forEach(tag => {
@@ -314,6 +314,22 @@
             alert("An error occured while computing percentiles. This log file might be too big. Try reducing the time range");
         }
         drawChart(data.histogram);
+        return data;
+    }
+
+    const ignoredMetrics = {};
+
+    function toggleMetric(tag) {
+        ignoredMetrics[tag] = !ignoredMetrics[tag];
+        displayLogs();
+    }
+
+    function drawMetricsToggles(tags) {
+        const content = tags.reduce(((buffer, tag) => {
+            return buffer + ' ' + `<input type="checkbox" id="toggle_${tag}" onclick="toggleMetric('${tag}');" checked><label for="toggle_${tag}">${tag}</label>`;
+        }), "<fieldset><legend>Metric toggles</legend>") + '</fieldset>';
+
+        document.getElementById('metric_toggles').innerHTML = content;
     }
 
     function handleFileSelect(evt) {
@@ -330,7 +346,8 @@
             reader.onload = (function(theFile) {
                 return function(e) {
                     logs = e.target.result;
-                    displayLogs();
+                    const data = displayLogs();
+                    drawMetricsToggles(data.tags);
                 };
             })(f);
 
@@ -389,6 +406,7 @@ Percentile range:
     }
 </script>
 </p>
+<div id="metric_toggles"></div>
 </div>
 </body>
 </html>
