@@ -317,7 +317,7 @@
         return data;
     }
 
-    const ignoredMetrics = {};
+    let ignoredMetrics = {};
 
     function toggleMetric(tag) {
         ignoredMetrics[tag] = !ignoredMetrics[tag];
@@ -345,6 +345,7 @@
 
             reader.onload = (function(theFile) {
                 return function(e) {
+                    ignoredMetrics = {};
                     logs = e.target.result;
                     const data = displayLogs();
                     drawMetricsToggles(data.tags);
