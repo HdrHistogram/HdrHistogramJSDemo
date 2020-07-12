@@ -1,28 +1,29 @@
 <html>
-  <body>
-    Hello performance now ?
-    <script src="lib/hdrhistogram.min.js"></script>
-    <script>
-window.onload =  function() {
-      
+
+<body>
+  Hello performance now ?
+  <script src="lib/hdrhistogram.umd.js"></script>
+  <script>
+    window.onload = function () {
+
       const histogram = hdr.build();
 
-      setInterval(function() {
+      setInterval(function () {
         var first = performance.now();
         var second = performance.now();
         var timeInMicroSec = (second - first) * 1000
         histogram.recordValue(timeInMicroSec);
       }, 5);
-  
+
 
       setInterval(
-          function() {
-            console.log(histogram.outputPercentileDistribution());
-          },
-          10000
-        );
-}
-    </script>
-  </body>
+        function () {
+          console.log(histogram.outputPercentileDistribution());
+        },
+        10000
+      );
+    }
+  </script>
+</body>
 
 </html>
