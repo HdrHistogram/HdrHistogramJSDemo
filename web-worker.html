@@ -1,26 +1,18 @@
 <html>
 
 <body>
-  <h1>Web workwer roundtrip time in micro sec</h1>
+  <h1 style="text-align: center;">Web workwer roundtrip time in micro sec</h1>
   <pre id="result">Waiting for results...</pre>
   <script src="lib/hdrhistogram.umd.js"></script>
   <script>
     window.onload = function () {
       var worker = new Worker('worker.js');
 
+      let nbMessages = 0;
       setInterval(function () {
         worker.postMessage(performance.now());
-      }, 5);
-
-      const histogram = hdr.build();
-
-      worker.onmessage = function (e) {
-        var roundtripInMicoSec = Math.round((performance.now() - e.data) * 1000)
-        histogram.recordValue(roundtripInMicoSec);
-      }
-
-      setInterval(
-        function () {
+        nbMessages++;
+        if (nbMessages % 100 === 0) {
           document.getElementById("result").innerHTML = `
             50% ${histogram.getValueAtPercentile(50)} 
             90% ${histogram.getValueAtPercentile(90)} 
@@ -30,9 +22,15 @@
             ${histogram.totalCount} measures
           
           `;
-        },
-        10000
-      );
+        }
+      }, 5);
+
+      const histogram = hdr.build();
+
+      worker.onmessage = function (e) {
+        var roundtripInMicoSec = Math.round((performance.now() - e.data) * 1000)
+        histogram.recordValue(roundtripInMicoSec);
+      }
     }
   </script>
 </body>
