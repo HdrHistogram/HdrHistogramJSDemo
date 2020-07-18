@@ -1,29 +1,40 @@
 <html>
-  <body>
-    Hello
-    <script src="lib/hdrhistogram.min.js"></script>
-    <script>
-window.onload =  function() {
+
+<body>
+  <h1>Web workwer roundtrip time in micro sec</h1>
+  <pre id="result">Waiting for results...</pre>
+  <script src="lib/hdrhistogram.umd.js"></script>
+  <script>
+    window.onload = function () {
       var worker = new Worker('worker.js');
-      
-      setInterval(function() { 
+
+      setInterval(function () {
         worker.postMessage(performance.now());
       }, 5);
-  
+
       const histogram = hdr.build();
 
-      worker.onmessage = function(e) {
-        histogram.recordValue(e.data);
+      worker.onmessage = function (e) {
+        var roundtripInMicoSec = Math.round((performance.now() - e.data) * 1000)
+        histogram.recordValue(roundtripInMicoSec);
       }
 
       setInterval(
-          function() {
-            console.log(histogram.outputPercentileDistribution());
-          },
-          10000
-        );
-}
-    </script>
-  </body>
+        function () {
+          document.getElementById("result").innerHTML = `
+            50% ${histogram.getValueAtPercentile(50)} 
+            90% ${histogram.getValueAtPercentile(90)} 
+            99% ${histogram.getValueAtPercentile(99)} 
+            MAX ${histogram.maxValue} 
+
+            ${histogram.totalCount} measures
+          
+          `;
+        },
+        10000
+      );
+    }
+  </script>
+</body>
 
 </html>
